@@ -52,6 +52,8 @@ Skybox::init ()
           reinterpret_cast<const unsigned char *> (data.constData ()),
           data.size (), &width, &height, &nrComponents, 0);
 
+      stbi_set_flip_vertically_on_load (false);
+
       if (dataPtr)
         {
           glGenTextures (1, &m_hdrTexture);

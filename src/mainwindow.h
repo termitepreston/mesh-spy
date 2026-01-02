@@ -11,6 +11,7 @@ class GLViewWidget;
 class QPushButton;
 class QCheckBox;
 class QLabel;
+class QProgressBar;
 
 class MainWindow : public QMainWindow
 {
@@ -25,6 +26,9 @@ private slots:
   void onModelLoaded (SceneData *data);
   void onModelLoadError (QString error);
 
+  // New Actions
+  void onAboutClicked ();
+
 private:
   void setupUi ();
 
@@ -38,7 +42,10 @@ private:
   QCheckBox *m_chkRough;
   QCheckBox *m_chkNormal;
   QCheckBox *m_chkWireframe;
+
+  // Feedback
   QLabel *m_statusLabel;
+  QProgressBar *m_progressBar; // Added for spinner requirement
 
   QThread *m_loaderThread;
 

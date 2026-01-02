@@ -1,13 +1,18 @@
 #include "mainwindow.h"
-#include "gltfloader.h" // Include the loader
+#include "gltfloader.h"
 #include "glviewwidget.h"
+#include "renderconfig.h"
 
+#include <QApplication>
 #include <QCheckBox>
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMenu>
+#include <QMenuBar>
 #include <QMessageBox>
+#include <QProgressBar>
 #include <QPushButton>
 #include <QSplitter>
 #include <QStatusBar>
@@ -27,6 +32,18 @@ MainWindow::~MainWindow () {}
 void
 MainWindow::setupUi ()
 {
+  // --- Menu Bar ---
+  QMenu *fileMenu = menuBar ()->addMenu ("&File");
+  QAction *actLoad = fileMenu->addAction ("&Load Model...", this,
+                                          &MainWindow::onLoadModelClicked);
+  actLoad->setShortcut (QKeySequence::Open);
+  fileMenu->addSeparator ();
+  QAction *actQuit = fileMenu->addAction ("&Quit", qApp, &QApplication::quit);
+  actQuit->setShortcut (QKeySequence::Quit);
+
+  QMenu *helpMenu = menuBar ()->addMenu ("&Help");
+  helpMenu->addAction ("&About meshSpy", this, &MainWindow::onAboutClicked);
+
   QWidget *centralWidget = new QWidget (this);
   setCentralWidget (centralWidget);
 
@@ -95,6 +112,12 @@ MainWindow::setupUi ()
   m_statusLabel = new QLabel ("Ready", this);
   statusBar ()->addWidget (m_statusLabel);
 
+  // Progress Bar (Hidden by default)
+  m_progressBar = new QProgressBar (this);
+  m_progressBar->setFixedWidth (150);
+  m_progressBar->setVisible (false);
+  statusBar ()->addPermanentWidget (m_progressBar);
+
   connect (m_chkBaseColor, &QCheckBox::toggled, this,
            [this] (bool) { updateRenderConfig (); });
   connect (m_chkMetal, &QCheckBox::toggled, this,
@@ -120,6 +143,10 @@ MainWindow::onLoadModelClicked ()
   m_statusLabel->setText ("Loading " + fileName + "...");
   // Note: Spinner animation would require a QMovie or standard icon flip here,
   // keeping it simple text for now per Phase 3 scope.
+
+  // Enable indeterminate progress bar
+  m_progressBar->setRange (0, 0);
+  m_progressBar->setVisible (true);
 
   // Threading Setup
   m_loaderThread = new QThread;
@@ -149,6 +176,7 @@ MainWindow::onModelLoaded (SceneData *data)
 {
   m_btnLoad->setEnabled (true);
   m_statusLabel->setText ("Loaded successfully.");
+  m_progressBar->setVisible (false);
 
   // Pass to GLView (requires exposing the renderer or adding a method to
   // GLView)
@@ -162,6 +190,7 @@ MainWindow::onModelLoadError (QString error)
 {
   m_btnLoad->setEnabled (true);
   m_statusLabel->setText ("Error loading model.");
+  m_progressBar->setVisible (false);
   QMessageBox::critical (this, "Error", error);
 }
 
@@ -175,6 +204,21 @@ MainWindow::updateRenderConfig ()
   config.useRoughnessMap = m_chkRough->isChecked ();
   config.useNormalMap = m_chkNormal->isChecked ();
   config.wireframe = m_chkWireframe->isChecked ();
-
   m_glView->setMaterialSettings (config);
+}
+
+void
+MainWindow::onAboutClicked ()
+{
+  QMessageBox::about (
+      this, "About meshSpy",
+      "<h3>meshSpy v1.0</h3>"
+      "<p>A Deferred PBR GLTF Viewer built with Qt 6 and OpenGL.</p>"
+      "<p>Features:</p>"
+      "<ul>"
+      "<li>Deferred Rendering Pipeline (G-Buffer)</li>"
+      "<li>Image Based Lighting (IBL)</li>"
+      "<li>ACES Tone Mapping</li>"
+      "<li>Arcball Camera</li>"
+      "</ul>");
 }
