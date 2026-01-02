@@ -127,6 +127,13 @@ Model::draw (QOpenGLShaderProgram *shader, const RenderConfig &config)
 
   for (const auto &mesh : m_glMeshes)
     {
+      // FIX: Change default Metallic to 0.0 (Plastic) instead of 1.0 (Metal).
+      // This ensures objects without explicit material data are visible
+      // (Diffuse works).
+      shader->setUniformValue ("uBaseColorFactor", 1.0f, 1.0f, 1.0f, 1.0f);
+      shader->setUniformValue ("uMetallicFactor", 0.0f);  // Was 1.0f
+      shader->setUniformValue ("uRoughnessFactor", 1.0f); // Matte
+
       // Defaults if no material
       shader->setUniformValue ("uBaseColorFactor", 1.0f, 1.0f, 1.0f, 1.0f);
       shader->setUniformValue ("uMetallicFactor", 1.0f);

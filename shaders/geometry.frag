@@ -77,6 +77,18 @@ void main()
     float metallic = uMetallicFactor;
     float roughness = uRoughnessFactor;
 
+    if (uHasMetallicRoughnessMap) {
+        vec4 mrSample = texture(texture_metallicRoughness, TexCoords);
+        if (uUseRoughnessMap) roughness *= mrSample.g;
+        if (uUseMetallicMap) metallic *= mrSample.b;
+    }
+
+    // Safety: Clamp roughness to avoid perfect mathematical singularities
+    roughness = max(roughness, 0.04);
+
+    gPBR.r = metallic;
+    gPBR.g = roughness;
+
     // GLTF Metallic-Roughness packing: G = Roughness, B = Metallic
     if (uHasMetallicRoughnessMap) {
         vec4 mrSample = texture(texture_metallicRoughness, TexCoords);

@@ -58,7 +58,8 @@ Skybox::init ()
         {
           glGenTextures (1, &m_hdrTexture);
           glBindTexture (GL_TEXTURE_2D, m_hdrTexture);
-          glTexImage2D (GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB,
+
+          glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGB,
                         GL_FLOAT, dataPtr);
 
           glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -66,6 +67,8 @@ Skybox::init ()
           glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                            GL_LINEAR_MIPMAP_LINEAR);
           glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+          glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 10);
 
           // Generate mips for roughness approximation
           glGenerateMipmap (GL_TEXTURE_2D);
