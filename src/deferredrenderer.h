@@ -8,6 +8,7 @@
 #include "model.h"
 
 class GBuffer;
+class Camera;
 
 class DeferredRenderer : protected QOpenGLExtraFunctions
 {
@@ -17,7 +18,8 @@ public:
 
   void init (int width, int height);
   void resize (int width, int height);
-  void render (); // Main render entry point
+  void render (Camera *camera,
+               float modelRotationY); // Main render entry point
 
   void loadModel (SceneData *data);
 
@@ -27,7 +29,7 @@ private:
   void initTestCube (); // Temporary for Phase 2
 
   // Passes
-  void renderGeometryPass ();
+  void renderGeometryPass (Camera *camera, float modelRotationY);
   void renderLightingPass ();
 
   std::unique_ptr<GBuffer> m_gBuffer;

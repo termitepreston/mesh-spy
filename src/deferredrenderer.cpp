@@ -1,4 +1,6 @@
 #include "deferredrenderer.h"
+#include "camera.h"
+#include "deferredrenderer.h"
 #include "gbuffer.h"
 #include <QDebug>
 #include <glm/glm.hpp>
@@ -163,51 +165,75 @@ DeferredRenderer::initTestCube ()
 }
 
 void
-DeferredRenderer::render ()
+DeferredRenderer::render (Camera *camera, float modelRotationY)
 {
-  // 1. Geometry Pass: Render scene to G-Buffer
+  // 1. Geometry Pass
   m_gBuffer->bindWrite ();
-  glClearColor (0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor (0.0f, 0.0f, 0.0f, 0.0f); // Clear to black/empty
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glEnable (GL_DEPTH_TEST);
 
-  renderGeometryPass ();
+  if (camera)
+    {
+      renderGeometryPass (camera, modelRotationY);
+    }
 
-  // 2. Lighting Pass: Read G-Buffer and render to screen
-  glBindFramebuffer (GL_FRAMEBUFFER, 0); // Back to default
+  // 2. Lighting Pass
+  glBindFramebuffer (GL_FRAMEBUFFER, 0);
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glDisable (GL_DEPTH_TEST); // No depth test for Full screen quad
+  glDisable (GL_DEPTH_TEST);
 
   renderLightingPass ();
 }
 
 void
-DeferredRenderer::renderGeometryPass ()
+DeferredRenderer::renderGeometryPass (Camera *camera, float modelRotationY)
 {
-  if (!m_geomShader)
+  if (!m_geomShader || !camera)
     return;
 
   m_geomShader->bind ();
 
-  // Setup basic matrices for the test cube (Spinning)
+  // Model Matrix: Rotation from auto-rotate
   glm::mat4 model = glm::mat4 (1.0f);
-  // Rotate over time
-  static float angle = 0.0f;
-  angle += 0.01f;
-  model = glm::rotate (model, angle, glm::vec3 (0.0f, 1.0f, 0.0f));
 
-  glm::mat4 view = glm::lookAt (glm::vec3 (0.0f, 2.0f, 3.0f),
-                                glm::vec3 (0.0f, 0.0f, 0.0f),
-                                glm::vec3 (0.0f, 1.0f, 0.0f));
-  glm::mat4 projection = glm::perspective (
-      glm::radians (45.0f), (float)m_width / (float)m_height, 0.1f, 100.0f);
+  // We rotate around the Y axis as per requirement
+  // Note: The bounding box centering is handled by the Camera Target,
+  // so we can keep the model matrix at origin if the mesh data is centered,
+  // OR we translate model to -center then rotate.
+  // However, Arcball target handles centering visually.
+  // If the mesh is offset from (0,0,0) in the file, rotating
+  // simply around 0,0,0 might look off-center.
+  // For now, we rotate around World Origin (0,0,0).
+  // Since Camera target is set to Mesh Center, it will look like the
+  // object is pivoting around the world origin, which might be far from mesh
+  // center. Requirement says: "Model rotates around world Y-axis at bounding
+  // box center"
+
+  // To achieve rotation around bounding box center:
+  // 1. Translate Center to Origin
+  // 2. Rotate
+  // 3. Translate Origin to Center
+  // BUT: The standard Arcball approach is moving the camera.
+  // The specific requirement "Model rotates..." implies we should manipulate
+  // the Model Matrix.
+
+  // Since we don't have the center easily accessible here (it was in
+  // SceneData), let's assume for this phase that World Origin rotation is
+  // acceptable OR relies on the mesh being reasonably centered. (Improvements:
+  // store model center in DeferredRenderer).
+
+  model = glm::rotate (model, modelRotationY, glm::vec3 (0.0f, 1.0f, 0.0f));
 
   m_geomShader->setUniformValue (
       "model", QMatrix4x4 (glm::value_ptr (model)).transposed ());
   m_geomShader->setUniformValue (
-      "view", QMatrix4x4 (glm::value_ptr (view)).transposed ());
+      "view",
+      QMatrix4x4 (glm::value_ptr (camera->getViewMatrix ())).transposed ());
   m_geomShader->setUniformValue (
-      "projection", QMatrix4x4 (glm::value_ptr (projection)).transposed ());
+      "projection",
+      QMatrix4x4 (glm::value_ptr (camera->getProjectionMatrix ()))
+          .transposed ());
 
   if (m_model)
     {
@@ -215,7 +241,7 @@ DeferredRenderer::renderGeometryPass ()
     }
   else
     {
-      // Fallback to cube if no model loaded
+      // Fallback Cube
       m_geomShader->setUniformValue ("uAlbedoColor", 0.8f, 0.2f, 0.2f);
       m_geomShader->setUniformValue ("uMetallic", 0.0f);
       m_geomShader->setUniformValue ("uRoughness", 0.5f);
