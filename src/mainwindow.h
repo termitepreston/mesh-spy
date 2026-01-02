@@ -1,7 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "meshdata.h"
+
 #include <QMainWindow>
+#include <QThread>
 
 class GLViewWidget;
 class QPushButton;
@@ -18,6 +21,8 @@ public:
 
 private slots:
   void onLoadModelClicked ();
+  void onModelLoaded (SceneData *data);
+  void onModelLoadError (QString error);
 
 private:
   void setupUi ();
@@ -33,6 +38,8 @@ private:
   QCheckBox *m_chkNormal;
   QCheckBox *m_chkWireframe;
   QLabel *m_statusLabel;
+
+  QThread *m_loaderThread;
 };
 
 #endif // MAINWINDOW_H

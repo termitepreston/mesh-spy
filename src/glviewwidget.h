@@ -1,6 +1,7 @@
 #ifndef GLVIEWWIDGET_H
 #define GLVIEWWIDGET_H
 
+#include "meshdata.h"
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLWidget>
 #include <QTimer>
@@ -15,6 +16,7 @@ class GLViewWidget : public QOpenGLWidget, protected QOpenGLExtraFunctions
 public:
   explicit GLViewWidget (QWidget *parent = nullptr);
   ~GLViewWidget () override;
+  void loadModel (SceneData *data);
 
 protected:
   void initializeGL () override;

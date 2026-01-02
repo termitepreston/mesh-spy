@@ -83,13 +83,20 @@ set(SOURCES
     src/mainwindow.cpp
     src/glviewwidget.cpp
     src/gbuffer.cpp
-    src/deferredrenderer.cpp)
+    src/deferredrenderer.cpp
+    src/gltfloader.cpp
+    src/model.cpp
+    src/camera.cpp)
 
 set(HEADERS
     src/mainwindow.h
     src/glviewwidget.h
     src/gbuffer.h
-    src/deferredrenderer.h)
+    src/deferredrenderer.h
+    src/meshdata.h
+    src/gltfloader.h
+    src/model.h
+    src/camera.h)
 
 set(RESOURCES
     resources.qrc)

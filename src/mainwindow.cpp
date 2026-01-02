@@ -1,7 +1,9 @@
 #include "mainwindow.h"
+#include "gltfloader.h" // Include the loader
 #include "glviewwidget.h"
 
 #include <QCheckBox>
+#include <QFileDialog>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -96,7 +98,57 @@ MainWindow::setupUi ()
 void
 MainWindow::onLoadModelClicked ()
 {
-  // Placeholder for Priority 3
-  QMessageBox::information (
-      this, "Info", "GLTF Loading will be implemented in the next step.");
+  QString fileName = QFileDialog::getOpenFileName (
+      this, "Open GLTF/GLB", "", "GLTF Files (*.gltf *.glb)");
+  if (fileName.isEmpty ())
+    return;
+
+  // UI Feedback
+  m_btnLoad->setEnabled (false);
+  m_statusLabel->setText ("Loading " + fileName + "...");
+  // Note: Spinner animation would require a QMovie or standard icon flip here,
+  // keeping it simple text for now per Phase 3 scope.
+
+  // Threading Setup
+  m_loaderThread = new QThread;
+  GLTFLoader *worker = new GLTFLoader;
+  worker->moveToThread (m_loaderThread);
+
+  connect (m_loaderThread, &QThread::started, worker,
+           [worker, fileName] () { worker->process (fileName); });
+
+  // Connect completion signals
+  connect (worker, &GLTFLoader::finished, this, &MainWindow::onModelLoaded);
+  connect (worker, &GLTFLoader::error, this, &MainWindow::onModelLoadError);
+
+  // Cleanup
+  connect (worker, &GLTFLoader::finished, m_loaderThread, &QThread::quit);
+  connect (worker, &GLTFLoader::finished, worker, &QObject::deleteLater);
+  connect (worker, &GLTFLoader::error, m_loaderThread, &QThread::quit);
+  connect (worker, &GLTFLoader::error, worker, &QObject::deleteLater);
+  connect (m_loaderThread, &QThread::finished, m_loaderThread,
+           &QObject::deleteLater);
+
+  m_loaderThread->start ();
+}
+
+void
+MainWindow::onModelLoaded (SceneData *data)
+{
+  m_btnLoad->setEnabled (true);
+  m_statusLabel->setText ("Loaded successfully.");
+
+  // Pass to GLView (requires exposing the renderer or adding a method to
+  // GLView)
+  m_glView->loadModel (data); // Needs to be added to GLViewWidget
+
+  // Note: SceneData* ownership is transferred to GLView/Renderer
+}
+
+void
+MainWindow::onModelLoadError (QString error)
+{
+  m_btnLoad->setEnabled (true);
+  m_statusLabel->setText ("Error loading model.");
+  QMessageBox::critical (this, "Error", error);
 }

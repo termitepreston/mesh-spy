@@ -209,14 +209,20 @@ DeferredRenderer::renderGeometryPass ()
   m_geomShader->setUniformValue (
       "projection", QMatrix4x4 (glm::value_ptr (projection)).transposed ());
 
-  // Test Material Properties
-  m_geomShader->setUniformValue ("uAlbedoColor", 0.8f, 0.2f, 0.2f); // Red
-  m_geomShader->setUniformValue ("uMetallic", 0.5f);
-  m_geomShader->setUniformValue ("uRoughness", 0.3f);
-
-  glBindVertexArray (m_cubeVAO);
-  glDrawArrays (GL_TRIANGLES, 0, 36);
-  glBindVertexArray (0);
+  if (m_model)
+    {
+      m_model->draw (m_geomShader);
+    }
+  else
+    {
+      // Fallback to cube if no model loaded
+      m_geomShader->setUniformValue ("uAlbedoColor", 0.8f, 0.2f, 0.2f);
+      m_geomShader->setUniformValue ("uMetallic", 0.0f);
+      m_geomShader->setUniformValue ("uRoughness", 0.5f);
+      glBindVertexArray (m_cubeVAO);
+      glDrawArrays (GL_TRIANGLES, 0, 36);
+      glBindVertexArray (0);
+    }
 
   m_geomShader->release ();
 }
@@ -238,4 +244,14 @@ DeferredRenderer::renderLightingPass ()
   glBindVertexArray (0);
 
   m_lightShader->release ();
+}
+
+void
+DeferredRenderer::loadModel (SceneData *data)
+{
+  if (!m_model)
+    {
+      m_model = std::make_unique<Model> ();
+    }
+  m_model->create (data);
 }

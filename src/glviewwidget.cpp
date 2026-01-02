@@ -46,3 +46,19 @@ GLViewWidget::paintGL ()
       m_renderer->render ();
     }
 }
+
+void
+GLViewWidget::loadModel (SceneData *data)
+{
+  makeCurrent ();
+  if (m_renderer)
+    {
+      m_renderer->loadModel (data);
+    }
+  // Clean up the CPU data as the renderer copied what it needed to GPU,
+  // unless we want to keep it for bounding box calcs later.
+  // For now, let's delete it to prevent leaks.
+  delete data;
+  doneCurrent ();
+  update ();
+}

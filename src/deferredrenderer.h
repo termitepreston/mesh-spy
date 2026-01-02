@@ -5,6 +5,8 @@
 #include <QOpenGLShaderProgram>
 #include <memory>
 
+#include "model.h"
+
 class GBuffer;
 
 class DeferredRenderer : protected QOpenGLExtraFunctions
@@ -16,6 +18,8 @@ public:
   void init (int width, int height);
   void resize (int width, int height);
   void render (); // Main render entry point
+
+  void loadModel (SceneData *data);
 
 private:
   void initShaders ();
@@ -41,6 +45,8 @@ private:
 
   int m_width;
   int m_height;
+
+  std::unique_ptr<Model> m_model;
 };
 
 #endif // DEFERREDRENDERER_H
