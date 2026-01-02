@@ -214,11 +214,17 @@ MainWindow::onAboutClicked ()
       this, "About meshSpy",
       "<h3>meshSpy v1.0</h3>"
       "<p>A Deferred PBR GLTF Viewer built with Qt 6 and OpenGL.</p>"
-      "<p>Features:</p>"
+      "<p><strong>Features:</strong></p>"
       "<ul>"
       "<li>Deferred Rendering Pipeline (G-Buffer)</li>"
       "<li>Image Based Lighting (IBL)</li>"
       "<li>ACES Tone Mapping</li>"
       "<li>Arcball Camera</li>"
-      "</ul>");
+      "</ul>"
+      "<p><strong>Group Members</strong></p>"
+      "<ul>"
+      "<li>Alazar Gebremedhin</li>"
+      "<li>Hannibal Mussie</li>"
+      "<li>Samir Bahru</li>"
+      "<li>Yassin Bedru</li>");
 }
