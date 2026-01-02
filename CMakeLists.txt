@@ -80,12 +80,19 @@ FetchContent_MakeAvailable(glm)
 #---------------------------
 set(SOURCES
     src/main.cpp
-    src/mainwindow.cpp)
+    src/mainwindow.cpp
+    src/glviewwidget.cpp
+    src/gbuffer.cpp
+    src/deferredrenderer.cpp)
 
 set(HEADERS
-    src/mainwindow.h)
+    src/mainwindow.h
+    src/glviewwidget.h
+    src/gbuffer.h
+    src/deferredrenderer.h)
 
-set(RESOURCES)
+set(RESOURCES
+    resources.qrc)
 
 set(FORMS)
 
@@ -94,8 +101,7 @@ add_executable(${PROJECT_NAME}
     ${SOURCES}
     ${HEADERS}
     ${RESOURCES}
-    ${FORMS}
-    src/glviewwidget.h)
+    ${FORMS})
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
