@@ -17,6 +17,7 @@ MainWindow::MainWindow (QWidget *parent)
     : QMainWindow (parent), m_glView (new GLViewWidget (this))
 {
   setupUi ();
+  updateRenderConfig ();
   resize (1280, 720);
   setWindowTitle ("meshSpy - PBR Viewer");
 }
@@ -93,6 +94,17 @@ MainWindow::setupUi ()
   // --- Status Bar ---
   m_statusLabel = new QLabel ("Ready", this);
   statusBar ()->addWidget (m_statusLabel);
+
+  connect (m_chkBaseColor, &QCheckBox::toggled, this,
+           [this] (bool) { updateRenderConfig (); });
+  connect (m_chkMetal, &QCheckBox::toggled, this,
+           [this] (bool) { updateRenderConfig (); });
+  connect (m_chkRough, &QCheckBox::toggled, this,
+           [this] (bool) { updateRenderConfig (); });
+  connect (m_chkNormal, &QCheckBox::toggled, this,
+           [this] (bool) { updateRenderConfig (); });
+  connect (m_chkWireframe, &QCheckBox::toggled, this,
+           [this] (bool) { updateRenderConfig (); });
 }
 
 void
@@ -151,4 +163,18 @@ MainWindow::onModelLoadError (QString error)
   m_btnLoad->setEnabled (true);
   m_statusLabel->setText ("Error loading model.");
   QMessageBox::critical (this, "Error", error);
+}
+
+// Add a helper to gather state and send it
+void
+MainWindow::updateRenderConfig ()
+{
+  RenderConfig config;
+  config.useBaseColorMap = m_chkBaseColor->isChecked ();
+  config.useMetallicMap = m_chkMetal->isChecked ();
+  config.useRoughnessMap = m_chkRough->isChecked ();
+  config.useNormalMap = m_chkNormal->isChecked ();
+  config.wireframe = m_chkWireframe->isChecked ();
+
+  m_glView->setMaterialSettings (config);
 }

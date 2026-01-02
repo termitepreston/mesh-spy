@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "model.h"
+#include "renderconfig.h"
 
 class GBuffer;
 class Camera;
@@ -20,6 +21,11 @@ public:
   void resize (int width, int height);
   void render (Camera *camera,
                float modelRotationY); // Main render entry point
+  void
+  setConfig (const RenderConfig &config)
+  {
+    m_config = config;
+  } // New setter
 
   void loadModel (SceneData *data);
 
@@ -49,6 +55,8 @@ private:
   int m_height;
 
   std::unique_ptr<Model> m_model;
+
+  RenderConfig m_config; // Store settings
 };
 
 #endif // DEFERREDRENDERER_H

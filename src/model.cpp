@@ -111,21 +111,72 @@ Model::create (SceneData *data)
 }
 
 void
-Model::draw (QOpenGLShaderProgram *shader)
+Model::draw (QOpenGLShaderProgram *shader, const RenderConfig &config)
 {
+  // Set UI Toggles
+  shader->setUniformValue ("uUseBaseColorMap", config.useBaseColorMap);
+  shader->setUniformValue ("uUseMetallicMap", config.useMetallicMap);
+  shader->setUniformValue ("uUseRoughnessMap", config.useRoughnessMap);
+  shader->setUniformValue ("uUseNormalMap", config.useNormalMap);
+
+  // Set Sampler Units once (assuming specific slots)
+  // 0 = BaseColor, 1 = MetalRough, 2 = Normal
+  shader->setUniformValue ("texture_baseColor", 0);
+  shader->setUniformValue ("texture_metallicRoughness", 1);
+  shader->setUniformValue ("texture_normal", 2);
+
   for (const auto &mesh : m_glMeshes)
     {
-      // Apply Material Props
+      // Defaults if no material
+      shader->setUniformValue ("uBaseColorFactor", 1.0f, 1.0f, 1.0f, 1.0f);
+      shader->setUniformValue ("uMetallicFactor", 1.0f);
+      shader->setUniformValue ("uRoughnessFactor", 1.0f);
+      shader->setUniformValue ("uHasBaseColorMap", false);
+      shader->setUniformValue ("uHasMetallicRoughnessMap", false);
+      shader->setUniformValue ("uHasNormalMap", false);
+
       if (mesh.materialIndex >= 0 && mesh.materialIndex < m_materials.size ())
         {
           const MaterialData &mat = m_materials[mesh.materialIndex];
-          shader->setUniformValue ("uAlbedoColor", mat.baseColorFactor.x,
-                                   mat.baseColorFactor.y,
-                                   mat.baseColorFactor.z);
-          shader->setUniformValue ("uMetallic", mat.metallicFactor);
-          shader->setUniformValue ("uRoughness", mat.roughnessFactor);
-          // Texture binding to be implemented fully in Material phase,
-          // for now we rely on color/factors.
+
+          // Factors
+          shader->setUniformValue (
+              "uBaseColorFactor", mat.baseColorFactor.x, mat.baseColorFactor.y,
+              mat.baseColorFactor.z, mat.baseColorFactor.w);
+          shader->setUniformValue ("uMetallicFactor", mat.metallicFactor);
+          shader->setUniformValue ("uRoughnessFactor", mat.roughnessFactor);
+
+          // Bind Textures
+          // Base Color
+          if (mat.baseColorIndex >= 0
+              && mat.baseColorIndex < m_glTextures.size ()
+              && m_glTextures[mat.baseColorIndex].isValid)
+            {
+              glActiveTexture (GL_TEXTURE0);
+              glBindTexture (GL_TEXTURE_2D,
+                             m_glTextures[mat.baseColorIndex].id);
+              shader->setUniformValue ("uHasBaseColorMap", true);
+            }
+
+          // Metallic Roughness
+          if (mat.metallicRoughnessIndex >= 0
+              && mat.metallicRoughnessIndex < m_glTextures.size ()
+              && m_glTextures[mat.metallicRoughnessIndex].isValid)
+            {
+              glActiveTexture (GL_TEXTURE1);
+              glBindTexture (GL_TEXTURE_2D,
+                             m_glTextures[mat.metallicRoughnessIndex].id);
+              shader->setUniformValue ("uHasMetallicRoughnessMap", true);
+            }
+
+          // Normal
+          if (mat.normalIndex >= 0 && mat.normalIndex < m_glTextures.size ()
+              && m_glTextures[mat.normalIndex].isValid)
+            {
+              glActiveTexture (GL_TEXTURE2);
+              glBindTexture (GL_TEXTURE_2D, m_glTextures[mat.normalIndex].id);
+              shader->setUniformValue ("uHasNormalMap", true);
+            }
         }
 
       glBindVertexArray (mesh.vao);

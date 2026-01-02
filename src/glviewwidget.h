@@ -2,6 +2,7 @@
 #define GLVIEWWIDGET_H
 
 #include "meshdata.h"
+#include "renderconfig.h"
 #include <QMouseEvent>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLWidget>
@@ -20,6 +21,7 @@ public:
   explicit GLViewWidget (QWidget *parent = nullptr);
   ~GLViewWidget () override;
   void loadModel (SceneData *data);
+  void setMaterialSettings (const RenderConfig &config);
 
 protected:
   void initializeGL () override;

@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include "meshdata.h"
+#include "renderconfig.h"
 
 #include <QMainWindow>
 #include <QThread>
@@ -40,6 +41,9 @@ private:
   QLabel *m_statusLabel;
 
   QThread *m_loaderThread;
+
+private:
+  void updateRenderConfig ();
 };
 
 #endif // MAINWINDOW_H

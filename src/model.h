@@ -2,6 +2,7 @@
 #define MODEL_H
 
 #include "meshdata.h"
+#include "renderconfig.h"
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <memory>
@@ -29,7 +30,7 @@ public:
   ~Model ();
 
   void create (SceneData *data);
-  void draw (QOpenGLShaderProgram *shader);
+  void draw (QOpenGLShaderProgram *shader, const RenderConfig &config);
 
 private:
   std::vector<GLMesh> m_glMeshes;

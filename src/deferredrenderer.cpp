@@ -192,6 +192,16 @@ DeferredRenderer::renderGeometryPass (Camera *camera, float modelRotationY)
   if (!m_geomShader || !camera)
     return;
 
+  // Wireframe Mode Handling
+  if (m_config.wireframe)
+    {
+      glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
+    }
+  else
+    {
+      glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+    }
+
   m_geomShader->bind ();
 
   // Model Matrix: Rotation from auto-rotate
@@ -237,7 +247,7 @@ DeferredRenderer::renderGeometryPass (Camera *camera, float modelRotationY)
 
   if (m_model)
     {
-      m_model->draw (m_geomShader);
+      m_model->draw (m_geomShader, m_config); // Pass config
     }
   else
     {
@@ -251,6 +261,9 @@ DeferredRenderer::renderGeometryPass (Camera *camera, float modelRotationY)
     }
 
   m_geomShader->release ();
+
+  // Reset Polygon Mode just in case
+  glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void

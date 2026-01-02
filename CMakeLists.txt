@@ -96,7 +96,8 @@ set(HEADERS
     src/meshdata.h
     src/gltfloader.h
     src/model.h
-    src/camera.h)
+    src/camera.h
+    src/renderconfig.h)
 
 set(RESOURCES
     resources.qrc)

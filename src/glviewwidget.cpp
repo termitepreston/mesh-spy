@@ -92,6 +92,16 @@ GLViewWidget::loadModel (SceneData *data)
 }
 
 void
+GLViewWidget::setMaterialSettings (const RenderConfig &config)
+{
+  if (m_renderer)
+    {
+      m_renderer->setConfig (config);
+      update (); // Trigger redraw
+    }
+}
+
+void
 GLViewWidget::handleInteraction ()
 {
   m_autoRotateActive = false;
