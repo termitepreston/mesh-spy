@@ -117,3 +117,9 @@ GBuffer::bindRead ()
       glBindTexture (GL_TEXTURE_2D, m_textures[i]);
     }
 }
+
+unsigned int
+GBuffer::getFBO () const
+{
+  return m_fbo;
+}

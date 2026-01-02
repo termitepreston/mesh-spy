@@ -15,12 +15,15 @@ public:
   void resize (int width, int height);
 
 private:
-  unsigned int m_fbo;
   unsigned int m_textures[4]; // Pos, Norm, Albedo, PBR
   unsigned int m_rboDepth;    // Depth/Stencil
+  unsigned int m_fbo;
 
   int m_width;
   int m_height;
+
+public:
+  unsigned int getFBO () const;
 };
 
 #endif // GBUFFER_H

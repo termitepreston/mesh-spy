@@ -38,6 +38,10 @@ DeferredRenderer::init (int width, int height)
   initShaders ();
   initQuad ();
   initTestCube ();
+
+  // Init Skybox
+  m_skybox = std::make_unique<Skybox> ();
+  m_skybox->init ();
 }
 
 void
@@ -179,11 +183,38 @@ DeferredRenderer::render (Camera *camera, float modelRotationY)
     }
 
   // 2. Lighting Pass
+  // 2. Lighting Pass (Render to default framebuffer)
   glBindFramebuffer (GL_FRAMEBUFFER, 0);
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glDisable (GL_DEPTH_TEST);
 
-  renderLightingPass ();
+  renderLightingPass (camera); // Pass camera for View Pos
+
+  // 3. Skybox Pass (Render last)
+  // We copy the depth buffer from G-Buffer to default framebuffer
+  // so the skybox is occluded by geometry.
+  // BUT since we are doing deferred lighting on a quad, the depth information
+  // is in the G-Buffer texture, not the default framebuffer's depth buffer.
+  // We have two options:
+  // A) Draw skybox first, then blend lighting on top (complex).
+  // B) Blit G-Buffer Depth to Default Framebuffer Depth.
+
+  glBindFramebuffer (GL_READ_FRAMEBUFFER, m_gBuffer->getFBO ());
+  glBindFramebuffer (GL_DRAW_FRAMEBUFFER, 0);
+  glBlitFramebuffer (0, 0, m_width, m_height, 0, 0, m_width, m_height,
+                     GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+  glBindFramebuffer (GL_FRAMEBUFFER, 0);
+
+  if (camera && m_skybox)
+    {
+      glEnable (GL_DEPTH_TEST);
+      QMatrix4x4 view = QMatrix4x4 (glm::value_ptr (camera->getViewMatrix ()))
+                            .transposed ();
+      QMatrix4x4 proj
+          = QMatrix4x4 (glm::value_ptr (camera->getProjectionMatrix ()))
+                .transposed ();
+      m_skybox->render (view, proj);
+    }
 }
 
 void
@@ -267,7 +298,7 @@ DeferredRenderer::renderGeometryPass (Camera *camera, float modelRotationY)
 }
 
 void
-DeferredRenderer::renderLightingPass ()
+DeferredRenderer::renderLightingPass (Camera *camera)
 {
   if (!m_lightShader)
     return;
@@ -277,7 +308,20 @@ DeferredRenderer::renderLightingPass ()
   // Bind G-Buffer textures
   m_gBuffer->bindRead ();
 
-  // Render Quad
+  // Bind Environment Map (Slot 4)
+  if (m_skybox)
+    {
+      glActiveTexture (GL_TEXTURE4);
+      glBindTexture (GL_TEXTURE_2D, m_skybox->getTextureId ());
+      m_lightShader->setUniformValue ("environmentMap", 4);
+    }
+
+  if (camera)
+    {
+      glm::vec3 camPos = camera->getPosition ();
+      m_lightShader->setUniformValue ("viewPos", camPos.x, camPos.y, camPos.z);
+    }
+
   glBindVertexArray (m_quadVAO);
   glDrawArrays (GL_TRIANGLE_STRIP, 0, 4);
   glBindVertexArray (0);

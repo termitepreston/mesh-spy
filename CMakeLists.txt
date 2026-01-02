@@ -86,7 +86,8 @@ set(SOURCES
     src/deferredrenderer.cpp
     src/gltfloader.cpp
     src/model.cpp
-    src/camera.cpp)
+    src/camera.cpp
+    src/skybox.cpp)
 
 set(HEADERS
     src/mainwindow.h
@@ -97,7 +98,8 @@ set(HEADERS
     src/gltfloader.h
     src/model.h
     src/camera.h
-    src/renderconfig.h)
+    src/renderconfig.h
+    src/skybox.h)
 
 set(RESOURCES
     resources.qrc)

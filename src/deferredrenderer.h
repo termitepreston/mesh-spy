@@ -7,6 +7,7 @@
 
 #include "model.h"
 #include "renderconfig.h"
+#include "skybox.h"
 
 class GBuffer;
 class Camera;
@@ -36,7 +37,7 @@ private:
 
   // Passes
   void renderGeometryPass (Camera *camera, float modelRotationY);
-  void renderLightingPass ();
+  void renderLightingPass (Camera *camera);
 
   std::unique_ptr<GBuffer> m_gBuffer;
 
@@ -57,6 +58,8 @@ private:
   std::unique_ptr<Model> m_model;
 
   RenderConfig m_config; // Store settings
+
+  std::unique_ptr<Skybox> m_skybox;
 };
 
 #endif // DEFERREDRENDERER_H
