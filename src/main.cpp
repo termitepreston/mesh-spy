@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QFile>
 #include <QSurfaceFormat>
 
 int
@@ -17,6 +18,19 @@ main (int argc, char *argv[])
   format.setSamples (4); // MSAA (will likely be disabled for G-buffer pass,
                          // enabled for forward/composition)
   QSurfaceFormat::setDefaultFormat (format);
+
+  // Set dark theme.
+  QFile f (":qdarkstyle/dark/darkstyle.qss");
+
+  if (!f.exists ())
+    {
+      qDebug () << "Unable to set stylesheet, file not found!\n";
+    }
+  else if (f.open (QFile::ReadOnly | QFile::Text))
+    {
+      QTextStream ts (&f);
+      qApp->setStyleSheet (ts.readAll ());
+    }
 
   MainWindow window;
   window.show ();

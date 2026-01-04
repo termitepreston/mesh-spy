@@ -23,7 +23,7 @@ MainWindow::MainWindow (QWidget *parent)
 {
   setupUi ();
   updateRenderConfig ();
-  resize (1280, 720);
+  resize (640, 480);
   setWindowTitle ("meshSpy - PBR Viewer");
 }
 
@@ -55,7 +55,6 @@ MainWindow::setupUi ()
   // --- Side Panel ---
   QWidget *sidePanel = new QWidget (this);
   sidePanel->setFixedWidth (250);
-  sidePanel->setStyleSheet ("background-color: #2b2b2b; color: #ffffff;");
 
   QVBoxLayout *sideLayout = new QVBoxLayout (sidePanel);
   sideLayout->setContentsMargins (10, 10, 10, 10);
@@ -70,8 +69,6 @@ MainWindow::setupUi ()
 
   // Materials Section
   QGroupBox *matGroup = new QGroupBox ("Materials", this);
-  matGroup->setStyleSheet ("QGroupBox { border: 1px solid #444; margin-top: "
-                           "10px; padding-top: 10px; font-weight: bold; }");
   QVBoxLayout *matLayout = new QVBoxLayout (matGroup);
 
   m_chkBaseColor = new QCheckBox ("Base Color", this);

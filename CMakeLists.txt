@@ -102,7 +102,8 @@ set(HEADERS
     src/skybox.h)
 
 set(RESOURCES
-    resources.qrc)
+    resources.qrc
+    qdarkstyle/dark/darkstyle.qrc)
 
 set(FORMS)
 
